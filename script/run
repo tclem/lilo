@@ -1,0 +1,25 @@
+#!/bin/bash
+
+set -e
+
+export LC_CTYPE=en_US.UTF-8
+
+usage() {
+  echo "Usage: $0 TARGET"
+  echo "  Run a built binary."
+  exit 1
+}
+
+if [ $# -eq 0 ]; then
+  usage
+fi
+
+target="$1"
+shift
+
+target_path="$($(dirname $0)/path --exe "$target")"
+if [ -z "$target_path" ]; then
+  usage
+else
+  "$target_path" "$@"
+fi

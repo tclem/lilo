@@ -1,0 +1,62 @@
+#!/bin/bash
+
+set -e
+
+export LC_CTYPE=en_US.UTF-8
+
+if [[ "$(uname -s)" = "Darwin" ]]; then
+  platform="osx"
+  find_() {
+    find -E "$@"
+  }
+elif [[ "$(uname -s)" = "Linux" ]]; then
+  platform="linux"
+  find_() {
+    path="$1"
+    shift
+    find "$path" -regextype posix-extended "$@"
+  }
+fi
+
+project_path="$(cd "$(dirname $0)/.." && pwd)"
+build_path="$project_path/dist-newstyle/build"
+arch=x86_64
+compiler="[^/]+"
+
+usage() {
+  echo "Usage: $0 [--exe|--dir] TARGET"
+  echo "  Print the build path for a (built) target component. TARGET can be componet or package:component."
+  exit 1
+}
+
+case "$1" in
+  --exe|--dir)
+    flag="$1"
+    shift
+    ;;
+  -*)
+    usage
+    ;;
+esac
+
+if [ $# -eq 0 ]; then
+  usage
+fi
+
+target="$1"
+shift
+
+package="${target%\:*}-[^/]+"
+component="${target#*\:}"
+if [[ "$target" == "$component" ]]; then
+  package="[^/]+"
+fi
+
+case "$flag" in
+  --dir)
+    find_ "$build_path/$arch-$platform" -regex "$build_path/$arch-$platform/$compiler/$package/c/$component(/opt)?" -type d | tail -1
+    ;;
+  *)
+    find_ "$build_path/$arch-$platform" -regex "$build_path/$arch-$platform/$compiler/$package/c/$component(/opt)?/build/$component/$component" -type f | tail -1
+    ;;
+esac
