@@ -24,19 +24,19 @@ parensIf True = parens
 parensIf False = id
 
 instance Pretty Name where
-  ppr _ x = text x
+  ppr _ = text
 
 instance Pretty Expr where
   ppr p e = case e of
     Lit (LInt a) -> text (show a)
     Lit (LBool b) -> text (show b)
     Var x -> text x
-    App a b -> parensIf (p > 0) $ (ppr (p + 1) a) <+> (ppr p b)
+    App a b -> parensIf (p > 0) $ ppr (p + 1) a <+> ppr p b
     Lam x a -> parensIf (p > 0) $
         char '\\'
       <> hsep (fmap pp (viewVars e))
       <+> "->"
       <+> ppr (p + 1) (viewBody e)
 
-ppexpr :: Expr -> String
-ppexpr = render . ppr 0
+ppExpr :: Expr -> String
+ppExpr = render . ppr 0

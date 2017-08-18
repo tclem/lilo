@@ -47,7 +47,7 @@ lambda :: Parser Expr
 lambda = do
   Tok.reservedOp lexer "\\"
   args <- many1 identifier
-  Tok.reservedOp lexer "->"
+  Tok.reservedOp lexer "->" <|> Tok.reservedOp lexer "."
   body <- expression
   pure (foldr Lam body args)
 
@@ -59,5 +59,8 @@ expression = do
 term :: Parser Expr
 term = parens expression <|> literal <|> variable <|> lambda
 
-parseExpr :: String -> Either ParseError Expr
-parseExpr = parse (contents expression) ""
+parseExpr' :: String -> Either ParseError Expr
+parseExpr' = parse (contents expression) ""
+
+parseExpr :: String -> Expr
+parseExpr = either (error . show) id . parseExpr'

@@ -1,26 +1,28 @@
 module Interpreter where
 
-import Syntax
-import Data.Monoid
-
-data Value = Literal Lit | Lambda Name Expr
-  deriving (Eq, Show)
-
 -- church-encoded booleans
 -- naturals
 -- lists
+
 -- Write the y combinator and omega.
 -- Y diverges with call by evaluation order (which is what I have)
 -- look at Z instead (call by value Y combination or the strict Y combinator)
--- Small step reduction
 
+-- Small step reduction vs.
 -- Big step (do the whole thing recursively) *
 -- reducing to a value
 -- what's a value? Anything that can't be further reduced. e.g. a Literal.
 
+-- (\x -> x) 1
 -- Read: "The structure and intepretation of computer programs"
 
--- (\x -> x) 1
+import Syntax
+import Data.Monoid
+import qualified Data.Map as Map
+
+data Value = Literal Lit
+           | Lambda Name Expr
+  deriving (Eq, Show)
 
 eval :: Expr -> Value
 eval e = case e of
