@@ -1,8 +1,8 @@
 {-# LANGUAGE OverloadedStrings, TypeSynonymInstances, FlexibleInstances #-}
 
-module Pretty where
+module Typed2.Pretty where
 
-import Syntax
+import Typed2.Syntax
 import Text.PrettyPrint
 
 class Pretty p where
@@ -12,11 +12,11 @@ class Pretty p where
   pp = ppr 0
 
 viewVars :: Expr -> [Name]
-viewVars (Lam n a) = n : viewVars a
+viewVars (Lam n _ a) = n : viewVars a
 viewVars _ = []
 
 viewBody :: Expr -> Expr
-viewBody (Lam _ a) = viewBody a
+viewBody (Lam _ _ a) = viewBody a
 viewBody x = x
 
 parensIf :: Bool -> Doc -> Doc
@@ -32,7 +32,7 @@ instance Pretty Expr where
     Lit (LBool b) -> text (show b)
     Var x -> text x
     App a b -> parensIf (p > 0) $ ppr (p + 1) a <+> ppr p b
-    Lam x a -> parensIf (p > 0) $
+    Lam _ _ a -> parensIf (p > 0) $
         char '\\'
       <> hsep (fmap pp (viewVars e))
       <+> "->"

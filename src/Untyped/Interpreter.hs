@@ -1,4 +1,4 @@
-module Interpreter where
+module Untyped.Interpreter where
 
 -- church-encoded booleans
 -- naturals
@@ -16,7 +16,7 @@ module Interpreter where
 -- (\x -> x) 1
 -- Read: "The structure and intepretation of computer programs"
 
-import Syntax
+import Untyped.Syntax
 import Data.Monoid
 import qualified Data.Map as Map
 

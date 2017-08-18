@@ -1,10 +1,9 @@
-module Interpreter2 where
+module Untyped.Interpreter2 where
 
-import Syntax
+import Untyped.Syntax
 import Data.Monoid
 import Data.Maybe
 import qualified Data.List as L
--- import qualified Data.Map as Map
 
 data Value = Literal Lit
            | Closure Name Expr Scope

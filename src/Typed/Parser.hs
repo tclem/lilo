@@ -1,6 +1,6 @@
-module Parser where
+module Typed.Parser where
 
-import Syntax
+import Typed.Syntax
 
 import Text.Parsec
 import Text.Parsec.String (Parser)
@@ -11,12 +11,15 @@ import qualified Text.Parsec.Token as Tok
 
 lexer :: Tok.TokenParser ()
 lexer = Tok.makeTokenParser style
-  where ops = ["\\", "->", "."]
+  where ops = ["\\", "->", ".", ":"]
         names = []
         style = haskellStyle { Tok.reservedOpNames = ops
                              , Tok.reservedNames = names
                              , Tok.commentLine = "#"
+
                              }
+reservedOp :: String -> Parser ()
+reservedOp = Tok.reservedOp lexer
 
 contents :: Parser a -> Parser a
 contents p = do
@@ -26,6 +29,18 @@ contents p = do
 
 parens :: Parser a -> Parser a
 parens = Tok.parens lexer
+
+type' :: Parser Type
+type' = Ex.buildExpressionParser tyOps (tyLit <|> parens type')
+  where
+    infixOp x f = Ex.Infix (reservedOp x >> pure f)
+    tyOps = [
+        [infixOp "->" TArr Ex.AssocRight]
+      ]
+
+tyLit :: Parser Type
+tyLit = (reservedOp "Bool" >> pure TBool)
+    <|> (reservedOp "Int" >> pure TInt)
 
 identifier :: Parser String
 identifier = Tok.identifier lexer
@@ -45,11 +60,13 @@ variable = identifier >>= pure . Var
 
 lambda :: Parser Expr
 lambda = do
-  Tok.reservedOp lexer "\\"
-  args <- many1 identifier
-  Tok.reservedOp lexer "->" <|> Tok.reservedOp lexer "."
+  reservedOp "\\"
+  n <- identifier
+  reservedOp ":"
+  t <- type'
+  reservedOp "."
   body <- expression
-  pure (foldr Lam body args)
+  pure (Lam n t body)
 
 expression :: Parser Expr
 expression = do
