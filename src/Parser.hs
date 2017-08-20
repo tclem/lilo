@@ -1,6 +1,6 @@
-module Typed.Parser where
+module Parser where
 
-import Typed.Syntax
+import Syntax
 
 import Text.Parsec
 import Text.Parsec.String (Parser)
@@ -16,8 +16,8 @@ lexer = Tok.makeTokenParser style
         style = haskellStyle { Tok.reservedOpNames = ops
                              , Tok.reservedNames = names
                              , Tok.commentLine = "#"
-
                              }
+
 reservedOp :: String -> Parser ()
 reservedOp = Tok.reservedOp lexer
 
@@ -46,17 +46,17 @@ identifier :: Parser String
 identifier = Tok.identifier lexer
 
 bool :: Parser Expr
-bool =  (Tok.reserved lexer "true" >> pure (Lit (LBool True)))
-    <|> (Tok.reserved lexer "false" >> pure (Lit (LBool False)))
+bool =  (Tok.reserved lexer "true" >> pure (In (Lit (LBool True))))
+    <|> (Tok.reserved lexer "false" >> pure (In (Lit (LBool False))))
 
 number :: Parser Expr
-number = Tok.natural lexer >>= pure . Lit . LInt . fromIntegral
+number = Tok.natural lexer >>= pure . In . Lit . LInt . fromIntegral
 
 literal :: Parser Expr
 literal = number <|> bool
 
 variable :: Parser Expr
-variable = identifier >>= pure . Var
+variable = identifier >>= pure . In . Var
 
 lambda :: Parser Expr
 lambda = do
@@ -66,12 +66,12 @@ lambda = do
   t <- type'
   reservedOp "."
   body <- expression
-  pure (Lam n t body)
+  pure (In (Lam n t body))
 
 expression :: Parser Expr
 expression = do
   es <- many1 term
-  pure (foldl1 App es)
+  pure (foldl1 ((In .) . App) es)
 
 term :: Parser Expr
 term = parens expression <|> literal <|> variable <|> lambda

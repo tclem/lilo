@@ -1,5 +1,6 @@
 {-# LANGUAGE DeriveFunctor #-}
-module Typed2.Syntax where
+
+module Syntax where
 
 type Result = Either String
 

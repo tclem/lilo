@@ -1,10 +1,9 @@
-module Typed2.Interpreter where
+module Interpreter where
 
-import Typed2.Syntax
+import Syntax
 import Data.Monoid
 import Data.Maybe
 import qualified Data.List as L
--- import qualified Data.Map as Map
 
 data Value = Literal Lit
            | Closure Name (Elab Type) Scope

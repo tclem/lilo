@@ -40,7 +40,7 @@ build-type:          Simple
 
 -- Extra files to be distributed with the package, such as examples or a
 -- README.
-extra-source-files:  ChangeLog.md
+-- extra-source-files:  ChangeLog.md
 
 -- Constraint on the version of Cabal needed to build this package.
 cabal-version:       >=1.10
@@ -51,21 +51,11 @@ executable lilo
   main-is:             Main.hs
 
   -- Modules included in this executable, other than Main.
-  other-modules:       Typed.Syntax
-                     , Typed.Checker
-                     , Typed.Pretty
-                     , Typed.Parser
-                     , Typed.Interpreter
-                     , Typed2.Syntax
-                     , Typed2.Checker
-                     , Typed2.Parser
-                     , Typed2.Interpreter
-                     , Untyped.Syntax
-                     , Untyped.Parser
-                     , Untyped.Pretty
-                     , Untyped.NanoParsec
-                     , Untyped.Interpreter
-                     , Untyped.Interpreter2
+  other-modules:       Syntax
+                     , Checker
+                     , Pretty
+                     , Parser
+                     , Interpreter
 
   -- LANGUAGE extensions used by modules in this package.
   -- other-extensions:

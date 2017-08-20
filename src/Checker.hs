@@ -1,10 +1,8 @@
-module Typed2.Checker where
+module Checker where
 
-import Typed2.Syntax
+import Syntax
 import Data.Monoid
-import Data.Maybe
 import qualified Data.List as L
--- import qualified Data.Map as Map
 
 -- well typed program's don't go wrong
 
