@@ -53,8 +53,8 @@ identifier :: Parser String
 identifier = Tok.identifier lexer
 
 bool :: Parser Expr
-bool =  (reserved "true" >> pure (In (Lit (LBool True))))
-    <|> (reserved "false" >> pure (In (Lit (LBool False))))
+bool =  (reservedOp "true" >> pure (In (Lit (LBool True))))
+    <|> (reservedOp "false" >> pure (In (Lit (LBool False))))
 
 number :: Parser Expr
 number = Tok.natural lexer >>= pure . In . Lit . LInt . fromIntegral
@@ -71,6 +71,15 @@ pair = do
   reservedOp ","
   b <- literal
   pure (In (Pair a b))
+
+fst' :: Parser Expr
+fst' = do
+  reservedOp "fst"
+  e <- term
+  pure (In (Fst e))
+
+snd' :: Parser Expr
+snd' = reservedOp "snd" >> term >>= pure . In . Snd
 
 lambda :: Parser Expr
 lambda = do
@@ -89,7 +98,9 @@ expression = do
 
 term :: Parser Expr
 term =  parens expression
-    <|> pair
+    <|> fst'
+    <|> snd'
+    <|> try pair
     <|> literal
     <|> lambda
     <|> variable

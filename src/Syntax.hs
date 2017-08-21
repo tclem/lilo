@@ -10,6 +10,8 @@ data ExprF a
   = Var Name
   | Lit Lit
   | Pair a a
+  | Fst a
+  | Snd a
   | App a a
   | Lam Name Type a
   deriving (Eq, Functor, Show)

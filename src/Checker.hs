@@ -25,6 +25,16 @@ check = go []
         f@(EIn _ fstTy) <- go context a
         s@(EIn _ sndTy) <- go context b
         pure (EIn (Pair f s) (TPair fstTy sndTy))
+      Fst a -> do
+        p@(EIn tm ty) <- go context a
+        case ty of
+          TPair ty1 _ -> pure (EIn (Fst p) ty1)
+          _ -> Left $ "fst expected pair but got " <> show ty
+      Snd a -> do
+        p@(EIn tm ty) <- go context a
+        case ty of
+          TPair _ ty2 -> pure (EIn (Snd p) ty2)
+          _ -> Left $ "snd expected pair but got " <> show ty
       App fn arg -> do
         fnE@(EIn fnTm fnTy) <- go context fn
         argE@(EIn argTm argTy) <- go context arg

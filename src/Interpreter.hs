@@ -19,6 +19,8 @@ eval = go []
     go env expr = case eout expr of
       Var n -> fromJust (L.lookup n env)
       Lit l -> Literal l
+      Fst (EIn (Pair a _) _) -> go env a
+      Snd (EIn (Pair _ b) _) -> go env b
       Pair a b -> VPair (go env a) (go env b)
       App a b -> let Closure n body env' = go env a
                  in go ((n, go env b) : env') body
