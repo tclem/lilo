@@ -6,6 +6,7 @@ import Data.Maybe
 import qualified Data.List as L
 
 data Value = Literal Lit
+           | VPair Value Value
            | Closure Name (Elab Type) Scope
   deriving (Eq, Show)
 
@@ -18,6 +19,7 @@ eval = go []
     go env expr = case eout expr of
       Var n -> fromJust (L.lookup n env)
       Lit l -> Literal l
+      Pair a b -> VPair (go env a) (go env b)
       App a b -> let Closure n body env' = go env a
                  in go ((n, go env b) : env') body
       Lam n _ body -> Closure n body env

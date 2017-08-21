@@ -21,6 +21,10 @@ check = go []
       Lit l -> Right $ EIn (Lit l) (case l of
         LInt _ -> TInt
         LBool _ -> TBool)
+      Pair a b -> do
+        f@(EIn _ fstTy) <- go context a
+        s@(EIn _ sndTy) <- go context b
+        pure (EIn (Pair f s) (TPair fstTy sndTy))
       App fn arg -> do
         fnE@(EIn fnTm fnTy) <- go context fn
         argE@(EIn argTm argTy) <- go context arg

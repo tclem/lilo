@@ -9,6 +9,7 @@ type Name = String
 data ExprF a
   = Var Name
   | Lit Lit
+  | Pair a a
   | App a a
   | Lam Name Type a
   deriving (Eq, Functor, Show)
@@ -30,5 +31,6 @@ data Lit
 data Type
   = TInt
   | TBool
+  | TPair Type Type
   | TArr Type Type
   deriving(Eq, Show)

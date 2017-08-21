@@ -11,7 +11,7 @@ import qualified Text.Parsec.Token as Tok
 
 lexer :: Tok.TokenParser ()
 lexer = Tok.makeTokenParser style
-  where ops = ["\\", "->", ".", ":"]
+  where ops = ["\\", "->", ".", ",", ":"]
         names = []
         style = haskellStyle { Tok.reservedOpNames = ops
                              , Tok.reservedNames = names
@@ -20,6 +20,9 @@ lexer = Tok.makeTokenParser style
 
 reservedOp :: String -> Parser ()
 reservedOp = Tok.reservedOp lexer
+
+reserved :: String -> Parser ()
+reserved = Tok.reserved lexer
 
 contents :: Parser a -> Parser a
 contents p = do
@@ -31,12 +34,16 @@ parens :: Parser a -> Parser a
 parens = Tok.parens lexer
 
 type' :: Parser Type
-type' = Ex.buildExpressionParser tyOps (tyLit <|> parens type')
+type' = Ex.buildExpressionParser tyOps (ty <|> parens type')
   where
     infixOp x f = Ex.Infix (reservedOp x >> pure f)
     tyOps = [
-        [infixOp "->" TArr Ex.AssocRight]
+          [infixOp "->" TArr Ex.AssocRight]
+        , [infixOp "," TPair Ex.AssocRight]
       ]
+
+ty :: Parser Type
+ty = tyLit
 
 tyLit :: Parser Type
 tyLit = (reservedOp "Bool" >> pure TBool)
@@ -46,8 +53,8 @@ identifier :: Parser String
 identifier = Tok.identifier lexer
 
 bool :: Parser Expr
-bool =  (Tok.reserved lexer "true" >> pure (In (Lit (LBool True))))
-    <|> (Tok.reserved lexer "false" >> pure (In (Lit (LBool False))))
+bool =  (reserved "true" >> pure (In (Lit (LBool True))))
+    <|> (reserved "false" >> pure (In (Lit (LBool False))))
 
 number :: Parser Expr
 number = Tok.natural lexer >>= pure . In . Lit . LInt . fromIntegral
@@ -57,6 +64,13 @@ literal = number <|> bool
 
 variable :: Parser Expr
 variable = identifier >>= pure . In . Var
+
+pair :: Parser Expr
+pair = do
+  a <- literal
+  reservedOp ","
+  b <- literal
+  pure (In (Pair a b))
 
 lambda :: Parser Expr
 lambda = do
@@ -74,7 +88,11 @@ expression = do
   pure (foldl1 ((In .) . App) es)
 
 term :: Parser Expr
-term = parens expression <|> literal <|> variable <|> lambda
+term =  parens expression
+    <|> pair
+    <|> literal
+    <|> lambda
+    <|> variable
 
 parseExpr' :: String -> Either ParseError Expr
 parseExpr' = parse (contents expression) ""
