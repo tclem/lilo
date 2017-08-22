@@ -11,7 +11,7 @@ import qualified Text.Parsec.Token as Tok
 
 lexer :: Tok.TokenParser ()
 lexer = Tok.makeTokenParser style
-  where ops = ["\\", "->", ".", ",", ":"]
+  where ops = ["\\", "->", ".", ",", ":", "+"]
         names = []
         style = haskellStyle { Tok.reservedOpNames = ops
                              , Tok.reservedNames = names
@@ -40,6 +40,7 @@ type' = Ex.buildExpressionParser tyOps (ty <|> parens type')
     tyOps = [
           [infixOp "->" TArr Ex.AssocRight]
         , [infixOp "," TPair Ex.AssocRight]
+        , [infixOp "+" TSum Ex.AssocRight]
       ]
 
 ty :: Parser Type
@@ -73,13 +74,33 @@ pair = do
   pure (In (Pair a b))
 
 fst' :: Parser Expr
-fst' = do
-  reservedOp "fst"
-  e <- term
-  pure (In (Fst e))
+fst' = reservedOp "fst" >> term >>= pure . In . Fst
 
 snd' :: Parser Expr
 snd' = reservedOp "snd" >> term >>= pure . In . Snd
+
+right :: Parser Expr
+right = do
+  t <- reservedOp "right" >> term
+  reservedOp ":"
+  ty <- type'
+  pure (In (InR t ty))
+
+left :: Parser Expr
+left = do
+  t <- reservedOp "left" >> term
+  reservedOp ":"
+  ty <- type'
+  pure (In (InL t ty))
+
+case' :: Parser Expr
+case' = do
+  reservedOp "case"
+  e <- term
+  reservedOp "of"
+  l <- term
+  r <- term
+  pure (In (Case e l r))
 
 lambda :: Parser Expr
 lambda = do
@@ -101,6 +122,9 @@ term =  parens expression
     <|> fst'
     <|> snd'
     <|> try pair
+    <|> right
+    <|> left
+    <|> case'
     <|> literal
     <|> lambda
     <|> variable
