@@ -106,11 +106,11 @@ lambda :: Parser Expr
 lambda = do
   reservedOp "\\"
   n <- identifier
-  reservedOp ":"
-  t <- type'
+  -- reservedOp ":"
+  -- t <- type'
   reservedOp "."
   body <- expression
-  pure (In (Lam n t body))
+  pure (In (Lam n TBool body))
 
 expression :: Parser Expr
 expression = do

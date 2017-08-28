@@ -32,6 +32,7 @@ instance Pretty Expr where
 
 instance Pretty Type where
   ppr p ty = case ty of
+    TVar x -> text x
     TInt -> text "Int"
     TBool -> text "Bool"
     TArr a b -> parens (ppr p a <+> text "->" <+> ppr p b)

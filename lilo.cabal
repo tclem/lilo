@@ -55,6 +55,7 @@ executable lilo
                      , Checker
                      , Pretty
                      , Parser
+                     , Infer
                      , Interpreter
 
   -- LANGUAGE extensions used by modules in this package.
@@ -63,6 +64,7 @@ executable lilo
   -- Other library packages from which modules are imported.
   build-depends:       base >=4.8 && <5
                      , containers
+                     , mtl
                      , parsec
                      , pretty
 
