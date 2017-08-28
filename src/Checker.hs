@@ -3,9 +3,7 @@ module Checker where
 import Syntax
 import Data.Monoid hiding (Sum)
 import Control.Monad
-import qualified Data.List as L
-
--- well typed program's don't check' wrong
+import qualified Data.List as List
 
 data Value = Literal Lit
            | Closure Name Type Expr Scope
@@ -18,7 +16,7 @@ check = check' []
   where
     check' :: Scope -> Expr -> Result (Elab Type)
     check' ctx expr = case out expr of
-      Var n -> maybe (Left ("free variable " <> n)) (Right . EIn (Var n)) (L.lookup n ctx)
+      Var n -> maybe (Left ("free variable " <> n)) (Right . EIn (Var n)) (List.lookup n ctx)
       Lit l -> Right $ EIn (Lit l) (case l of
         LInt _ -> TInt
         LBool _ -> TBool)
@@ -71,15 +69,9 @@ check = check' []
         pure (EIn (Lam n ty bodyE) (TArr ty retTy))
 
 
-
--- Implement in Syntax:
--- pairs
--- fst/snd
--- -> sums
-
 -- Then, think about, study:
 -- type inference
--- unification, hindley-milner (alcheck'rithm m, alcheck'rithm w)
+-- unification, hindley-milner (algorithm m, algorithm w)
 
 -- Γ, _n_ : t |- Var n : t
 -- Γ |- \ n : t -> e
