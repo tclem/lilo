@@ -50,9 +50,11 @@ extend (TypeEnv env) (x, s) = TypeEnv $ Map.insert x s env
 runInfer :: Infer (Subst, Type) -> Result Scheme
 runInfer m = fmap closeOver (evalState (runExceptT m) 0)
   where
+    -- specializing
     closeOver :: (Map.Map TName Type, Type) -> Scheme
-    closeOver (sub, ty) = normalize (generalize (TypeEnv Map.empty) (apply sub ty))
+    closeOver (sub, ty) = normalize (generalize (apply sub ty))
 
+    -- Normalizes the free type variables back to the beginning of the set of fresh letters.
     normalize :: Scheme -> Scheme
     normalize (Forall as t) = Forall (fmap snd ord) (normType t)
       where
@@ -68,13 +70,15 @@ runInfer m = fmap closeOver (evalState (runExceptT m) 0)
         normType TInt = TInt
         normType TBool = TBool
 
-    generalize :: TypeEnv -> Type -> Scheme
-    generalize env t = Forall (Set.toList (ftv t \\ ftv env)) t
+    generalize :: Type -> Scheme
+    generalize t = Forall (Set.toList (ftv t)) t
 
 
+-- Compose substitutions.
 compose :: Subst -> Subst -> Subst
 compose s1 s2 = Map.union (Map.map (apply s1) s2) s1
 
+-- Unify two types to produce a substitution.
 unify :: Type -> Type -> Infer Subst
 unify (TArr l r) (TArr l' r') = do
   s1 <- unify l l'
