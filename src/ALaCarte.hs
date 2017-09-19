@@ -1,4 +1,4 @@
-{-# LANGUAGE DeriveFunctor, TypeOperators, MultiParamTypeClasses, FlexibleInstances, FlexibleContexts #-}
+{-# LANGUAGE DeriveFunctor, TypeOperators, MultiParamTypeClasses, FlexibleInstances, FlexibleContexts, UndecidableInstances #-}
 
 -- Experimenting with Data types à la carte
 -- http://www.cs.ru.nl/~W.Swierstra/Publications/DataTypesALaCarte.pdf
@@ -12,6 +12,8 @@
 module ALaCarte where
 
 import Data.Monoid
+import Data.Proxy (Proxy(..))
+import Data.Union
 
 -- Expressions parameterized by the signature of the expression constructor.
 newtype Expr f = In (f (Expr f))
@@ -36,31 +38,12 @@ class Render f where
 pretty :: Render f => Expr f -> String
 pretty (In t) = render t
 
+-- Render and Eval instances for Data.Union
+instance Apply Render fs => Render (Union fs) where
+  render = apply (Proxy :: Proxy Render) render
 
--- :<: type class defines type constraints so that we can say that a parameter
--- supports a specific data type.
-class (Functor sub, Functor sup) => sub :<: sup where
-  inj :: sub a -> sup a
-
--- :+: defines the coproduct of two type constructors
-infixr 5 :+:
-data (f :+: g) e = Inl (f e) | Inr (g e) deriving (Functor)
-
-instance (Eval f, Eval g) => Eval (f :+: g) where
-  evalAlgebra (Inl x) = evalAlgebra x
-  evalAlgebra (Inr y) = evalAlgebra y
-instance (Render f, Render g) => Render (f :+: g) where
-  render (Inl x) = render x
-  render (Inr y) = render y
-
-instance Functor f => f :<: f where
-  inj = id
-instance {-# OVERLAPPING #-} (Functor f, Functor g) => f :<: (f :+: g) where
-  inj = Inl
-instance {-# OVERLAPPING #-} (Functor f, Functor g, Functor h, f :<: g) => f :<: (h :+: g) where
-  inj = Inr . inj
-
-
+instance (Apply Eval fs, Apply Functor fs) => Eval (Union fs) where
+  evalAlgebra = apply (Proxy :: Proxy Eval) evalAlgebra
 
 -- Specific expression data types (these are the à la carte data types).
 newtype Val e = Val Int deriving (Functor)
@@ -82,16 +65,16 @@ instance Render Mul where
   render (Mul x y) = "(" <> pretty x <> " * " <> pretty y <> ")"
 
 -- Smart constructors
-inject :: (g :<: f) => g (Expr f) -> Expr f
+inject :: (g :< f) => g (Expr (Union f)) -> Expr (Union f)
 inject = In . inj
 
-val :: (Val :<: f) => Int -> Expr f
+val :: (Val :< f) => Int -> Expr (Union f)
 val = inject . Val
 
 infixl 6 ⊕
-(⊕) :: (Add :<: f) => Expr f -> Expr f -> Expr f
+(⊕) :: (Add :< f) => Expr (Union f) -> Expr (Union f) -> Expr (Union f)
 x ⊕ y = inject (Add x y)
 
 infixl 7 ⓧ
-(ⓧ) :: (Mul :<: f) => Expr f -> Expr f -> Expr f
+(ⓧ) :: (Mul :< f) => Expr (Union f) -> Expr (Union f) -> Expr (Union f)
 x ⓧ y = inject (Mul x y)
