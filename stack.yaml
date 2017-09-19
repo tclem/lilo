@@ -15,7 +15,7 @@
 # resolver:
 #  name: custom-snapshot
 #  location: "./custom-snapshot.yaml"
-resolver: lts-9.1
+resolver: nightly-2017-09-10
 
 # User packages to be built.
 # Various formats can be used as shown in the example below.
@@ -37,9 +37,22 @@ resolver: lts-9.1
 # will not be run. This is useful for tweaking upstream packages.
 packages:
 - .
+- location: vendor/effects
+  extra-dep: true
+- location: vendor/ghc-mod
+  extra-dep: true
+- location:
+    git: https://github.com/danielg/cabal-helper
+    commit: 70d743eb6a8b7f8da182524fa0b2c4bf02399d50
+  extra-dep: true
+
 # Dependency packages to be pulled from upstream that are not in the resolver
 # (e.g., acme-missiles-0.3)
-extra-deps: []
+extra-deps:
+- Cabal-1.24.2.0
+- extra-1.5.3
+- process-1.4.3.0
+- optparse-applicative-0.13.2.0
 
 # Override default flag values for local packages and extra-deps
 flags: {}
