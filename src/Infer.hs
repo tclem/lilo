@@ -109,6 +109,13 @@ lookupEnv (TypeEnv env) x = case Map.lookup x env of
 letters :: [String]
 letters = [1..] >>= flip replicateM ['a'..'z']
 
+-- lam :: (Term -> Term) -> Term
+-- lam f = Lam n body
+--   where n = succ (maxBoundVariable body)
+--         body = f (var n)
+--
+-- identity = lam id
+
 fresh :: Infer Type
 fresh = do
   i <- get
