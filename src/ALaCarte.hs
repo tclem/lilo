@@ -4,7 +4,7 @@
 -- http://www.cs.ru.nl/~W.Swierstra/Publications/DataTypesALaCarte.pdf
 --
 -- Example usage:
--- λ let x :: ALaCarte.Expr (Val :+: Mul :+: Add) = val 80 ⓧ val 5 ⊕ val 3
+-- λ let x :: ALaCarte.Expr (Union '[Val, Add, Mul]) = val 80 ⓧ  val 5 ⊕ val 3
 -- λ ALaCarte.eval x
 -- 403
 -- λ ALaCarte.pretty x
