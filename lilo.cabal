@@ -21,7 +21,7 @@ executable lilo
                      , Pretty
                     --  , Parser
                     --  , Infer
-                    --  , Interpreter
+                     , Eval
                      , ALaCarte
 
   -- LANGUAGE extensions used by modules in this package.

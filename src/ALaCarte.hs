@@ -18,7 +18,6 @@ import Data.Union
 -- Expressions parameterized by the signature of the expression constructor.
 newtype Expr f = In (f (Expr f))
 
-
 -- Smart constructor helper
 inject :: (g :< f) => g (Expr (Union f)) -> Expr (Union f)
 inject = In . inj
@@ -27,17 +26,6 @@ inject = In . inj
 -- Evaluation
 
 -- Eval type class
-class Functor f => Eval f where
-  evalAlgebra :: f Int -> Int
-
-eval :: Eval f => Expr f -> Int
-eval = foldExpr evalAlgebra
-
-foldExpr :: Functor f => (f a -> a) -> Expr f -> a
-foldExpr f (In t) = f (fmap (foldExpr f) t)
-
-instance (Apply Eval fs, Apply Functor fs) => Eval (Union fs) where
-  evalAlgebra = apply (Proxy :: Proxy Eval) evalAlgebra
 
 -- Specific expression data types (these are the à la carte data types).
 -- newtype Val e = Val Int deriving (Functor)

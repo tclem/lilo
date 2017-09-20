@@ -7,13 +7,17 @@ import Text.PrettyPrint as PP hiding (render)
 
 import ALaCarte
 import Pretty
+import Eval
 
 -- Booleans
 
 newtype Boolean a = Boolean Bool deriving (Functor)
 
 instance Render Boolean where
-  render _ (Boolean a) = text (show a)
+  render _ (Boolean x) = text (show x)
+
+instance Eval Boolean where
+  evalAlgebra _ (Boolean x) = LBool x
 
 bool :: (Boolean :< f) => Bool -> Expr (Union f)
 bool = inject . Boolean
@@ -30,7 +34,10 @@ false = bool False
 newtype Integer a = Integer Int deriving (Functor)
 
 instance Render Syntax.Integer where
-  render _ (Integer a) = text (show a)
+  render _ (Integer x) = text (show x)
+
+instance Eval Syntax.Integer where
+  evalAlgebra _ (Integer x) = LInt x
 
 int :: (Syntax.Integer :< f) => Int -> Expr (Union f)
 int = inject . Integer
@@ -41,7 +48,10 @@ int = inject . Integer
 newtype Variable a = Variable String deriving (Functor)
 
 instance Render Variable where
-  render _ (Variable a) = text a
+  render _ (Variable x) = text x
+
+instance Eval Variable where
+  evalAlgebra env (Variable x) = lookupEnv env x
 
 var :: (Variable :< f) => String -> Expr (Union f)
 var = inject . Variable
@@ -58,6 +68,9 @@ instance Render Lambda where
     <+> "->"
     <+> render (succ d) t
 
+-- instance Eval Lambda where
+--   evalAlgebra env (Lambda name body) = Closure name body env
+
 lam :: (Lambda :< f) => String -> Expr (Union f) -> Expr (Union f)
 lam n body = inject (Lambda n body)
 
@@ -69,6 +82,11 @@ data Application a = Application a a deriving (Functor)
 instance Render Application where
   render d (Application (In e1) (In e2)) = parensIf (d > 0) $
     render (succ d) e1 <+> render d e2
+
+-- instance Eval Application where
+--   evalAlgebra env (Application a b) =
+--     let Closure name body env' = a
+--     in evalAlgebra (_) (In b)
 
 app :: (Application :< f) => Expr (Union f) -> Expr (Union f) -> Expr (Union f)
 app a b = inject (Application a b)
