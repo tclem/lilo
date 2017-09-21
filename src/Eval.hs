@@ -46,6 +46,11 @@ eval = eval' []
     eval' :: Eval f => Scope' f -> Expr f -> ValueF (Expr f)
     eval' env (In t) = evalAlgebra env eval' t
 
+    -- eval :: Eval f => Expr f -> Value
+    -- eval = foldExpr (evalAlgebra [])
+    --   where
+    --     foldExpr :: Functor f => (f a -> a) -> Expr f -> a
+    --     foldExpr f (In t) = f (fmap (foldExpr f) t)
 
 -- import Data.Monoid
 -- import Data.Maybe

@@ -19,7 +19,7 @@ executable lilo
   other-modules:       Syntax
                     --  , Checker
                      , Pretty
-                    --  , Parser
+                     , Parser
                     --  , Infer
                      , Eval
                      , ALaCarte

@@ -1,4 +1,4 @@
-{-# LANGUAGE OverloadedStrings, DeriveFunctor, TypeOperators, FlexibleContexts, DeriveGeneric #-}
+{-# LANGUAGE OverloadedStrings, DeriveFunctor, TypeOperators, FlexibleContexts, DeriveGeneric, DataKinds #-}
 
 module Syntax where
 
@@ -12,6 +12,9 @@ import GHC.Generics
 import ALaCarte
 import Pretty
 import Eval
+
+
+type Syntax = Expr (Union '[Syntax.Integer, Boolean, Variable, Lambda, Application])
 
 -- Booleans
 
