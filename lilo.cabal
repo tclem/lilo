@@ -34,6 +34,7 @@ executable lilo
                      , mtl
                      , parsec
                      , pretty
+                     , free
   -- Directories containing source files.
   hs-source-dirs:      src
 

@@ -4,6 +4,7 @@ module Syntax where
 
 import Data.Union
 import Text.PrettyPrint as PP hiding (render)
+import Control.Monad.Free
 
 import ALaCarte
 import Pretty
@@ -17,7 +18,7 @@ instance Render Boolean where
   render _ (Boolean x) = text (show x)
 
 instance Eval Boolean where
-  evalAlgebra _ (Boolean x) = LBool x
+  evalAlgebra _ (Boolean x) = Free (LBool x)
 
 bool :: (Boolean :< f) => Bool -> Expr (Union f)
 bool = inject . Boolean
@@ -37,7 +38,7 @@ instance Render Syntax.Integer where
   render _ (Integer x) = text (show x)
 
 instance Eval Syntax.Integer where
-  evalAlgebra _ (Integer x) = LInt x
+  evalAlgebra _ (Integer x) = Free (LInt x)
 
 int :: (Syntax.Integer :< f) => Int -> Expr (Union f)
 int = inject . Integer
@@ -68,8 +69,9 @@ instance Render Lambda where
     <+> "->"
     <+> render (succ d) t
 
--- instance Eval Lambda where
---   evalAlgebra env (Lambda name body) = Closure name body env
+instance Eval Lambda where
+  evalAlgebra env (Lambda name body) =
+    let env' = (name, body) : env in Free (Closure name body env')
 
 lam :: (Lambda :< f) => String -> Expr (Union f) -> Expr (Union f)
 lam n body = inject (Lambda n body)
@@ -85,8 +87,8 @@ instance Render Application where
 
 -- instance Eval Application where
 --   evalAlgebra env (Application a b) =
---     let Closure name body env' = a
---     in evalAlgebra (_) (In b)
+--     let Closure name body env' = evalAlgebra env a
+--     in evalAlgebra _ _
 
 app :: (Application :< f) => Expr (Union f) -> Expr (Union f) -> Expr (Union f)
 app a b = inject (Application a b)
