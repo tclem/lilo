@@ -15,34 +15,40 @@ import ALaCarte
 type Value = Free ValueF
 data ValueF f = LInt Int
               | LBool Bool
-              | Closure Name f (Scope f)
+              | Closure Name f --(Scope f)
   deriving(Functor, Show)
 
 type Name = String
 type Scope f = [(Name, f)]
 
+type Scope' f = Scope (ValueF (Expr f))
+
 class Functor f => Eval f where
-  evalAlgebra :: Eval g => Scope (Value (Expr g)) -> f (Value (Expr g)) -> Value (Expr g)
+  evalAlgebra :: Eval g => Scope' g -> f (Value (Expr g)) -> Value (Expr g)
+  -- evalAlgebra :: Eval g => f (Scope' g -> Value (Expr g)) -> Value (Expr g)
+  evalAlgebra' :: Eval g => Scope' g -> f (Expr g) -> ValueF (Scope' g, Expr g)
 
 instance (Apply Eval fs, Apply Functor fs) => Eval (Union fs) where
   evalAlgebra env = apply (Proxy :: Proxy Eval) (evalAlgebra env)
+  evalAlgebra' env = apply (Proxy :: Proxy Eval) (evalAlgebra' env)
 
 -- Lookup a Name in an environment.
-lookupEnv :: Scope (Value (Expr f)) -> Name -> Value (Expr f)
+lookupEnv :: Scope' f -> Name -> ValueF (Expr f)
 lookupEnv env k = fromMaybe (error ("free variable " <> k)) (L.lookup k env)
 
 -- Evalute
 eval :: Eval f => Expr f -> Value (Expr f)
-eval = eval' (evalAlgebra [])
+eval expr = unfold eval' ([], expr)
   where
-    eval' :: Functor f => (f a -> a) -> Expr f -> a
-    eval' f (In t) = f (fmap (eval' f) t)
--- eval = eval' []
+    -- hylo :: Functor f => (f b -> b) -> (a -> f a) -> a -> b
+    -- unfold :: Functor f => (b -> Either a (f b)) -> b -> Free f a
+    eval' :: Eval f => (Scope' f, Expr f) -> Either (Expr f) (ValueF (Scope' f, Expr f))
+    eval' (env, In t) = Right (evalAlgebra' env t)
+
+-- eval = eval' (evalAlgebra [])
 --   where
---     eval' :: Scope (Value (Expr f)) -> Expr f -> Value (Expr f)
---     eval' env (In t) = evalAlgebra env t
---
--- type Evaluate f = Scope (Value (Expr f)) -> Expr f -> Value (Expr f)
+--     eval' :: Functor f => (f a -> a) -> Expr f -> a
+--     eval' f (In t) = f (fmap (eval' f) t)
 
 
 -- import Data.Monoid

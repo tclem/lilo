@@ -19,6 +19,7 @@ instance Render Boolean where
 
 instance Eval Boolean where
   evalAlgebra _ (Boolean x) = Free (LBool x)
+  evalAlgebra' _ (Boolean x) = LBool x
 
 bool :: (Boolean :< f) => Bool -> Expr (Union f)
 bool = inject . Boolean
@@ -39,6 +40,7 @@ instance Render Syntax.Integer where
 
 instance Eval Syntax.Integer where
   evalAlgebra _ (Integer x) = Free (LInt x)
+  evalAlgebra' _ (Integer x) = LInt x
 
 int :: (Syntax.Integer :< f) => Int -> Expr (Union f)
 int = inject . Integer
@@ -52,7 +54,8 @@ instance Render Variable where
   render _ (Variable x) = text x
 
 instance Eval Variable where
-  evalAlgebra env (Variable x) = lookupEnv env x
+  -- evalAlgebra env (Variable x) = lookupEnv env x
+  evalAlgebra' env (Variable x) = (\x -> (env, x)) <$> lookupEnv env x
 
 var :: (Variable :< f) => String -> Expr (Union f)
 var = inject . Variable
@@ -70,8 +73,7 @@ instance Render Lambda where
     <+> render (succ d) t
 
 instance Eval Lambda where
-  evalAlgebra env (Lambda name body) =
-    let env' = (name, body) : env in Free (Closure name body env')
+  evalAlgebra' env (Lambda name body) = (\x -> (env, x)) <$> Closure name body
 
 lam :: (Lambda :< f) => String -> Expr (Union f) -> Expr (Union f)
 lam n body = inject (Lambda n body)
