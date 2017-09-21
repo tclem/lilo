@@ -1,4 +1,4 @@
-{-# LANGUAGE StandaloneDeriving, DeriveFunctor, TypeOperators, MultiParamTypeClasses, FlexibleInstances, FlexibleContexts, UndecidableInstances #-}
+{-# LANGUAGE StandaloneDeriving, TypeOperators, MultiParamTypeClasses, FlexibleInstances, FlexibleContexts, UndecidableInstances #-}
 
 -- Experimenting with Data types à la carte
 -- http://www.cs.ru.nl/~W.Swierstra/Publications/DataTypesALaCarte.pdf

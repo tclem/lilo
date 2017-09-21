@@ -1,11 +1,13 @@
-{-# LANGUAGE OverloadedStrings, DeriveFunctor, TypeOperators, FlexibleContexts #-}
+{-# LANGUAGE OverloadedStrings, DeriveFunctor, TypeOperators, FlexibleContexts, DeriveGeneric #-}
 
 module Syntax where
 
 import Data.Union
 import Text.PrettyPrint as PP hiding (render)
 import Control.Monad.Free
--- import Data.Functor.Classes
+import Data.Functor.Classes
+import Data.Functor.Classes.Show.Generic
+import GHC.Generics
 
 import ALaCarte
 import Pretty
@@ -13,10 +15,10 @@ import Eval
 
 -- Booleans
 
-newtype Boolean a = Boolean Bool deriving (Functor)
+newtype Boolean a = Boolean Bool deriving (Functor, Show, Generic1)
 
-instance Render Boolean where
-  render _ (Boolean x) = text (show x)
+instance Show1 Boolean where liftShowsPrec = genericLiftShowsPrec
+instance Render Boolean where render _ (Boolean x) = text (show x)
 
 instance Eval Boolean where
   evalAlgebra _ _ (Boolean x) = LBool x
@@ -33,12 +35,10 @@ false = bool False
 
 -- Integers
 
-newtype Integer a = Integer Int deriving (Functor)
+newtype Integer a = Integer Int deriving (Functor, Show, Generic1)
 
--- instance Show1 Syntax.Integer where liftShowsPrec = genericLiftShowsPrec
-
-instance Render Syntax.Integer where
-  render _ (Integer x) = text (show x)
+instance Show1 Syntax.Integer where liftShowsPrec = genericLiftShowsPrec
+instance Render Syntax.Integer where render _ (Integer x) = text (show x)
 
 instance Eval Syntax.Integer where
   evalAlgebra _ _ (Integer x) = LInt x
@@ -49,10 +49,10 @@ int = inject . Integer
 
 -- Variables
 
-newtype Variable a = Variable String deriving (Functor)
+newtype Variable a = Variable String deriving (Functor, Show, Generic1)
 
-instance Render Variable where
-  render _ (Variable x) = text x
+instance Show1 Variable where liftShowsPrec = genericLiftShowsPrec
+instance Render Variable where render _ (Variable x) = text x
 
 instance Eval Variable where
   evalAlgebra env _ (Variable x) = lookupEnv env x
@@ -63,8 +63,9 @@ var = inject . Variable
 
 -- Lambdas
 
-data Lambda a = Lambda String a deriving (Functor)
+data Lambda a = Lambda String a deriving (Functor, Show, Generic1)
 
+instance Show1 Lambda where liftShowsPrec = genericLiftShowsPrec
 instance Render Lambda where
   render d (Lambda name (In t)) = parensIf (d > 0) $
     char '\\'
@@ -81,8 +82,9 @@ lam n body = inject (Lambda n body)
 
 -- Application
 
-data Application a = Application a a deriving (Functor)
+data Application a = Application a a deriving (Functor, Show, Generic1)
 
+instance Show1 Application where liftShowsPrec = genericLiftShowsPrec
 instance Render Application where
   render d (Application (In e1) (In e2)) = parensIf (d > 0) $
     render (succ d) e1 <+> render d e2
