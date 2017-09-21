@@ -23,7 +23,10 @@ type Scope' f = Scope (ValueF (Expr f))
 
 -- Evaluation of Exprs
 class Functor f => Eval f where
-  evalAlgebra :: Scope' g -> (Scope' g -> Expr g -> ValueF (Expr g)) -> f (Expr g) -> ValueF (Expr g)
+  evalAlgebra :: Scope' g -- The current environment
+              -> (Scope' g -> Expr g -> ValueF (Expr g)) -- A continuation (eval)
+              -> f (Expr g) -- The expression
+              -> ValueF (Expr g) -- The resulting ValueF
 
 instance (Apply Eval fs, Apply Functor fs) => Eval (Union fs) where
   evalAlgebra env c = apply (Proxy :: Proxy Eval) (evalAlgebra env c)
