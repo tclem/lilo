@@ -5,6 +5,7 @@ module Syntax where
 import Data.Union
 import Text.PrettyPrint as PP hiding (render)
 import Control.Monad.Free
+-- import Data.Functor.Classes
 
 import ALaCarte
 import Pretty
@@ -18,8 +19,7 @@ instance Render Boolean where
   render _ (Boolean x) = text (show x)
 
 instance Eval Boolean where
-  evalAlgebra _ (Boolean x) = Free (LBool x)
-  evalAlgebra' _ (Boolean x) = LBool x
+  evalAlgebra _ _ (Boolean x) = LBool x
 
 bool :: (Boolean :< f) => Bool -> Expr (Union f)
 bool = inject . Boolean
@@ -35,12 +35,13 @@ false = bool False
 
 newtype Integer a = Integer Int deriving (Functor)
 
+-- instance Show1 Syntax.Integer where liftShowsPrec = genericLiftShowsPrec
+
 instance Render Syntax.Integer where
   render _ (Integer x) = text (show x)
 
 instance Eval Syntax.Integer where
-  evalAlgebra _ (Integer x) = Free (LInt x)
-  evalAlgebra' _ (Integer x) = LInt x
+  evalAlgebra _ _ (Integer x) = LInt x
 
 int :: (Syntax.Integer :< f) => Int -> Expr (Union f)
 int = inject . Integer
@@ -54,8 +55,7 @@ instance Render Variable where
   render _ (Variable x) = text x
 
 instance Eval Variable where
-  -- evalAlgebra env (Variable x) = lookupEnv env x
-  evalAlgebra' env (Variable x) = (\x -> (env, x)) <$> lookupEnv env x
+  evalAlgebra env _ (Variable x) = lookupEnv env x
 
 var :: (Variable :< f) => String -> Expr (Union f)
 var = inject . Variable
@@ -73,7 +73,7 @@ instance Render Lambda where
     <+> render (succ d) t
 
 instance Eval Lambda where
-  evalAlgebra' env (Lambda name body) = (\x -> (env, x)) <$> Closure name body
+  evalAlgebra env _ (Lambda name body) = Closure name body env
 
 lam :: (Lambda :< f) => String -> Expr (Union f) -> Expr (Union f)
 lam n body = inject (Lambda n body)
@@ -87,10 +87,10 @@ instance Render Application where
   render d (Application (In e1) (In e2)) = parensIf (d > 0) $
     render (succ d) e1 <+> render d e2
 
--- instance Eval Application where
---   evalAlgebra env (Application a b) =
---     let Closure name body env' = evalAlgebra env a
---     in evalAlgebra _ _
+instance Eval Application where
+  evalAlgebra env eval (Application a b) =
+    let Closure name body env' = eval env a
+    in eval ((name, eval env b) : env') body
 
 app :: (Application :< f) => Expr (Union f) -> Expr (Union f) -> Expr (Union f)
 app a b = inject (Application a b)

@@ -1,4 +1,4 @@
-{-# LANGUAGE DeriveFunctor, TypeOperators, MultiParamTypeClasses, FlexibleInstances, FlexibleContexts, UndecidableInstances #-}
+{-# LANGUAGE StandaloneDeriving, DeriveFunctor, TypeOperators, MultiParamTypeClasses, FlexibleInstances, FlexibleContexts, UndecidableInstances #-}
 
 -- Experimenting with Data types à la carte
 -- http://www.cs.ru.nl/~W.Swierstra/Publications/DataTypesALaCarte.pdf
@@ -14,9 +14,12 @@ module ALaCarte where
 import Data.Monoid
 import Data.Proxy (Proxy(..))
 import Data.Union
+import Data.Functor.Classes
 
 -- Expressions parameterized by the signature of the expression constructor.
 newtype Expr f = In (f (Expr f))
+
+deriving instance Show (f (Expr f)) => Show (Expr f)
 
 -- Smart constructor helper
 inject :: (g :< f) => g (Expr (Union f)) -> Expr (Union f)
