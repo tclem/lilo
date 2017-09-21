@@ -10,11 +10,12 @@ import qualified Text.PrettyPrint (render)
 
 import ALaCarte
 
+-- Pretty prettying of Exprs
 class Render f where
   render :: Render g => Int -> f (Expr g) -> Doc
 
 instance Apply Render fs => Render (Union fs) where
-  render d = apply (Proxy :: Proxy Render) (Pretty.render d)
+  render d = apply (Proxy :: Proxy Render) (render d)
 
 parensIf :: Bool -> Doc -> Doc
 parensIf True = parens

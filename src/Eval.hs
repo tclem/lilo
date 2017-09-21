@@ -11,17 +11,17 @@ import qualified Data.List as L
 
 import ALaCarte
 
-
 data ValueF f = LInt Int
               | LBool Bool
               | Closure Name f (Scope (ValueF f))
-  deriving(Functor, Show)
+  deriving(Eq, Show, Functor)
 
 type Name = String
 type Scope f = [(Name, f)]
 
 type Scope' f = Scope (ValueF (Expr f))
 
+-- Evaluation of Exprs
 class Functor f => Eval f where
   evalAlgebra :: Scope' g -> (Scope' g -> Expr g -> ValueF (Expr g)) -> f (Expr g) -> ValueF (Expr g)
 
