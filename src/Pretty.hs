@@ -22,8 +22,9 @@ parensIf True = parens
 parensIf False = id
 
 
-pretty :: Render f => Expr f -> String
-pretty (In t) = Text.PrettyPrint.render (Pretty.render 0 t)
+-- Pretty print
+pp :: Render f => Expr f -> String
+pp (In t) = Text.PrettyPrint.render (render 0 t)
 
 
 -- import Syntax
