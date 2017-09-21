@@ -29,8 +29,12 @@ instance (Apply Eval fs, Apply Functor fs) => Eval (Union fs) where
   evalAlgebra env c = apply (Proxy :: Proxy Eval) (evalAlgebra env c)
 
 -- Lookup a Name in an environment.
-lookupEnv :: Scope' f -> Name -> ValueF (Expr f)
-lookupEnv env k = fromMaybe (error ("free variable " <> k)) (L.lookup k env)
+lookupEnv :: Name -> Scope' f -> ValueF (Expr f)
+lookupEnv n env = fromMaybe (error ("free variable " <> n)) (L.lookup n env)
+
+-- Extend an environment.
+extendEnv :: Name -> ValueF (Expr f) -> Scope' f -> Scope' f
+extendEnv n v = (:) (n, v)
 
 -- Evalute
 eval :: Eval f => Expr f -> ValueF (Expr f)

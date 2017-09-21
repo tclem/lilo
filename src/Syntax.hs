@@ -55,7 +55,7 @@ instance Show1 Variable where liftShowsPrec = genericLiftShowsPrec
 instance Render Variable where render _ (Variable x) = text x
 
 instance Eval Variable where
-  evalAlgebra env _ (Variable x) = lookupEnv env x
+  evalAlgebra env _ (Variable x) = lookupEnv x env
 
 var :: (Variable :< f) => String -> Expr (Union f)
 var = inject . Variable
@@ -92,7 +92,8 @@ instance Render Application where
 instance Eval Application where
   evalAlgebra env eval (Application a b) =
     let Closure name body env' = eval env a
-    in eval ((name, eval env b) : env') body
+        value = eval env b
+    in eval (extendEnv name value env') body
 
 app :: (Application :< f) => Expr (Union f) -> Expr (Union f) -> Expr (Union f)
 app a b = inject (Application a b)
