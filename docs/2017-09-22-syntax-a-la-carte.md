@@ -53,9 +53,9 @@ Using these techniques, I then set out to implement pretty printing and evaluati
 Pretty printing is straight forward and sets the stage for how we will work with the à la carte data types. We define a type class `Render` and then each individual syntax data type implements their own instance of render.
 
 ```
-λ pp (lam "x" (var "x") :: Expr (Union '[Syntax.Integer, Boolean, Variable, Lambda, Application]))
+λ ppExpr (lam "x" (var "x") :: Expr (Union '[Syntax.Integer, Boolean, Variable, Lambda, Application]))
 "\\x -> x"
-λ pp (app (lam "x" (var "x")) (int 1) :: Expr (Union '[Syntax.Integer, Boolean, Variable, Lambda, Application]))
+λ ppExpr (app (lam "x" (var "x")) (int 1) :: Expr (Union '[Syntax.Integer, Boolean, Variable, Lambda, Application]))
 "(\\x -> x) 1"
 ```
 
@@ -64,16 +64,28 @@ Pretty printing is straight forward and sets the stage for how we will work with
 Evaluating turned out to be slightly tricker for me to implement, largely due to the need for a more general recursion than the simple fold and algebra presented in the paper. I also ended up wiring up the parser again (easy to do with the `Expr (Union f)` smart constructors).
 
 ```
-λ eval (lam "x" (var "x") :: Expr (Union '[Syntax.Integer, Boolean, Variable, Lambda, Application]))
+λ evalExpr (lam "x" (var "x") :: Expr (Union '[Syntax.Integer, Boolean, Variable, Lambda, Application]))
 Right (Closure "x" (In (Variable "x")) [])
-λ eval ((var "x") :: Expr (Union '[Syntax.Integer, Boolean, Variable, Lambda, Application]))
+λ evalExpr ((var "x") :: Expr (Union '[Syntax.Integer, Boolean, Variable, Lambda, Application]))
 Left "free variable x"
-λ eval (app (lam "x" (var "x")) (int 1) :: Expr (Union '[Syntax.Integer, Boolean, Variable, Lambda, Application]))
+λ evalExpr (app (lam "x" (var "x")) (int 1) :: Expr (Union '[Syntax.Integer, Boolean, Variable, Lambda, Application]))
 Right (LInt 1)
-λ eval $ parseExpr "1"
+λ evalExpr $ parseExpr "1"
 Right (LInt 1)
-λ eval $ parseExpr "(\\x.x) 1"
+λ evalExpr $ parseExpr "(\\x.x) 1"
 Right (LInt 1)
-λ eval $ parseExpr "(\\x.(\\y.y)) 1"
+λ evalExpr $ parseExpr "(\\x.(\\y.y)) 1"
 Right (Closure "y" (In (Variable "y")) [("x",LInt 1)])
 ```
+
+After a couple of iterations, the end solution is quite elegant. Just like `render`, we can constrain the inner expression to also have an instance of `Eval` letting us easily make the recursive `eval` calls from within an instance like:
+
+```haskell
+instance Eval Application where
+  eval env (Application (In a) (In b)) =
+    let Right (Closure name (In body) env') = eval env a
+        Right value = eval env b
+    in eval (extendEnv name value env') body
+```
+
+That really cleaned up the code too as there is no more need to pass around another (basically identical) continuation.
