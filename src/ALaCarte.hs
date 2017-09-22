@@ -21,7 +21,6 @@ inject = In . inj
 -- Result of evaluating, checking, infering...
 type Result = Either String
 
-
 -- Example usage:
 -- λ let x :: ALaCarte.Expr (Union '[Val, Add, Mul]) = val 80 ⓧ  val 5 ⊕ val 3
 -- λ ALaCarte.eval x
