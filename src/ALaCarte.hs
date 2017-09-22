@@ -2,13 +2,6 @@
 
 -- Experimenting with Data types à la carte
 -- http://www.cs.ru.nl/~W.Swierstra/Publications/DataTypesALaCarte.pdf
---
--- Example usage:
--- λ let x :: ALaCarte.Expr (Union '[Val, Add, Mul]) = val 80 ⓧ  val 5 ⊕ val 3
--- λ ALaCarte.eval x
--- 403
--- λ ALaCarte.pretty x
--- "((80 * 5) + 3)"
 module ALaCarte where
 
 import Data.Monoid
@@ -25,10 +18,16 @@ deriving instance Show (f (Expr f)) => Show (Expr f)
 inject :: (g :< f) => g (Expr (Union f)) -> Expr (Union f)
 inject = In . inj
 
+-- Result of evaluating, checking, infering...
+type Result = Either String
 
--- Evaluation
 
--- Eval type class
+-- Example usage:
+-- λ let x :: ALaCarte.Expr (Union '[Val, Add, Mul]) = val 80 ⓧ  val 5 ⊕ val 3
+-- λ ALaCarte.eval x
+-- 403
+-- λ ALaCarte.pretty x
+-- "((80 * 5) + 3)"
 
 -- Specific expression data types (these are the à la carte data types).
 -- newtype Val e = Val Int deriving (Functor)

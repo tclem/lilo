@@ -24,33 +24,28 @@ type Scope' f = Scope (ValueF (Expr f))
 -- Evaluation of Exprs
 class Functor f => Eval f where
   evalAlgebra :: Scope' g -- The current environment
-              -> (Scope' g -> Expr g -> ValueF (Expr g)) -- A continuation (eval)
+              -> (Scope' g -> Expr g -> Result (ValueF (Expr g))) -- A continuation (eval)
               -> f (Expr g) -- The expression
-              -> ValueF (Expr g) -- The resulting ValueF
+              -> Result (ValueF (Expr g)) -- The resulting ValueF
 
 instance (Apply Eval fs, Apply Functor fs) => Eval (Union fs) where
   evalAlgebra env c = apply (Proxy :: Proxy Eval) (evalAlgebra env c)
 
 -- Lookup a Name in an environment.
-lookupEnv :: Name -> Scope' f -> ValueF (Expr f)
-lookupEnv n env = fromMaybe (error ("free variable " <> n)) (L.lookup n env)
+lookupEnv :: Name -> Scope' f -> Result (ValueF (Expr f))
+lookupEnv n env = maybe (Left ("free variable " <> n)) Right (L.lookup n env)
 
 -- Extend an environment.
 extendEnv :: Name -> ValueF (Expr f) -> Scope' f -> Scope' f
 extendEnv n v = (:) (n, v)
 
 -- Evalute
-eval :: Eval f => Expr f -> ValueF (Expr f)
+eval :: Eval f => Expr f -> Result (ValueF (Expr f))
 eval = eval' []
   where
-    eval' :: Eval f => Scope' f -> Expr f -> ValueF (Expr f)
+    eval' :: Eval f => Scope' f -> Expr f -> Result (ValueF (Expr f))
     eval' env (In t) = evalAlgebra env eval' t
 
-    -- eval :: Eval f => Expr f -> Value
-    -- eval = foldExpr (evalAlgebra [])
-    --   where
-    --     foldExpr :: Functor f => (f a -> a) -> Expr f -> a
-    --     foldExpr f (In t) = f (fmap (foldExpr f) t)
 
 -- import Data.Monoid
 -- import Data.Maybe

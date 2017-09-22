@@ -24,7 +24,7 @@ instance Show1 Boolean where liftShowsPrec = genericLiftShowsPrec
 instance Render Boolean where render _ (Boolean x) = text (show x)
 
 instance Eval Boolean where
-  evalAlgebra _ _ (Boolean x) = LBool x
+  evalAlgebra _ _ (Boolean x) = Right (LBool x)
 
 bool :: (Boolean :< f) => Bool -> Expr (Union f)
 bool = inject . Boolean
@@ -44,7 +44,7 @@ instance Show1 Syntax.Integer where liftShowsPrec = genericLiftShowsPrec
 instance Render Syntax.Integer where render _ (Integer x) = text (show x)
 
 instance Eval Syntax.Integer where
-  evalAlgebra _ _ (Integer x) = LInt x
+  evalAlgebra _ _ (Integer x) = Right (LInt x)
 
 int :: (Syntax.Integer :< f) => Int -> Expr (Union f)
 int = inject . Integer
@@ -77,7 +77,7 @@ instance Render Lambda where
     <+> render (succ d) t
 
 instance Eval Lambda where
-  evalAlgebra env _ (Lambda name body) = Closure name body env
+  evalAlgebra env _ (Lambda name body) = Right (Closure name body env)
 
 lam :: (Lambda :< f) => String -> Expr (Union f) -> Expr (Union f)
 lam n body = inject (Lambda n body)
@@ -94,8 +94,8 @@ instance Render Application where
 
 instance Eval Application where
   evalAlgebra env eval (Application a b) =
-    let Closure name body env' = eval env a
-        value = eval env b
+    let Right (Closure name body env') = eval env a
+        Right value = eval env b
     in eval (extendEnv name value env') body
 
 app :: (Application :< f) => Expr (Union f) -> Expr (Union f) -> Expr (Union f)
