@@ -23,8 +23,8 @@ parensIf False = id
 
 
 -- Pretty print
-pp :: Render f => Expr f -> String
-pp (In t) = Text.PrettyPrint.render (render 0 t)
+ppExpr :: Render f => Expr f -> String
+ppExpr (In t) = Text.PrettyPrint.render (render 0 t)
 
 
 -- import Syntax

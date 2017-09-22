@@ -23,13 +23,10 @@ type Scope' f = Scope (ValueF (Expr f))
 
 -- Evaluation of Exprs
 class Functor f => Eval f where
-  evalAlgebra :: Scope' g -- The current environment
-              -> (Scope' g -> Expr g -> Result (ValueF (Expr g))) -- A continuation (eval)
-              -> f (Expr g) -- The expression
-              -> Result (ValueF (Expr g)) -- The resulting ValueF
+  eval :: Eval g => Scope' g -> f (Expr g) -> Result (ValueF (Expr g))
 
 instance (Apply Eval fs, Apply Functor fs) => Eval (Union fs) where
-  evalAlgebra env c = apply (Proxy :: Proxy Eval) (evalAlgebra env c)
+  eval env = apply (Proxy :: Proxy Eval) (eval env)
 
 -- Lookup a Name in an environment.
 lookupEnv :: Name -> Scope' f -> Result (ValueF (Expr f))
@@ -40,11 +37,8 @@ extendEnv :: Name -> ValueF (Expr f) -> Scope' f -> Scope' f
 extendEnv n v = (:) (n, v)
 
 -- Evalute
-eval :: Eval f => Expr f -> Result (ValueF (Expr f))
-eval = eval' []
-  where
-    eval' :: Eval f => Scope' f -> Expr f -> Result (ValueF (Expr f))
-    eval' env (In t) = evalAlgebra env eval' t
+evalExpr :: Eval f => Expr f -> Result (ValueF (Expr f))
+evalExpr (In t) = eval [] t
 
 
 -- import Data.Monoid
