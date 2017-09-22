@@ -28,13 +28,13 @@ To restate some of the core concepts of the *Data types à la carte* functional 
 > The goal is to define a data type by cases, where one can add new cases to the data type and new functions over the data type, without recompiling existing code, and while retaining static type safety.
   - Phil Wadler (1998), the *Expression Problem*
 
-Instead, we define `Expr` as follows:
+To that end, we define `Expr` as follows:
 
 ``` haskell
 newtype Expr f = In (f (Expr f))
 ```
 
-Note that `Expr` is now parameterized by *f* which is going to be the signature of our constructors. We are now free to define the various parts of the language like so:
+Note that `Expr` is now parameterized by *f* which is going to be the signature of our constructors. Our only requirement is that the constructors have a Functor instance. We are now free to define the various parts of the language like so:
 
 ``` haskell
 newtype Boolean a = Boolean Bool deriving (Functor)
@@ -50,7 +50,7 @@ Using these techniques, I then set out to implement pretty printing and evaluati
 
 #### Pretty printing
 
-Pretty printing is straight forward and sets the stage for how we will work with the à la carte data types. We define a type class `Render` and then each individual syntax data type implements their own instance of render.
+Pretty printing is straightforward and sets the stage for how we will work with the à la carte data types. We define a type class `Render` and then each individual syntax data type implements their own instance of render.
 
 ```
 λ ppExpr (lam "x" (var "x") :: Expr (Union '[Syntax.Integer, Boolean, Variable, Lambda, Application]))
