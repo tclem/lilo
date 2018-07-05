@@ -21,6 +21,6 @@ I'm tracking my progress in a series of small, informal posts:
 
 ## References:
 
-- A lot of the ideas and code here is inspired by and directly from [Stephen Diehl](http://dev.stephendiehl.com/fun).
+- A lot of the ideas and code here are inspired by and directly from [Stephen Diehl](http://dev.stephendiehl.com/fun).
 - [Church booleans](https://en.wikipedia.org/wiki/Church_encoding#Church_Booleans)
 - [Fixed point combinators](https://en.wikipedia.org/wiki/Fixed-point_combinator)
